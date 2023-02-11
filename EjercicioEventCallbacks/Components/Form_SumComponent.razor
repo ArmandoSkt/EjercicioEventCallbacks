@@ -1,0 +1,27 @@
+﻿<div class="bg-white shadow-lg rounded overflow-hidden mb-2">
+	<h4 class="bg-info bg-opacity-75 p-1 text-center fw-bolder">Sum Sample</h4>
+	<div class="p-1 d-flex flex-column align-items-center">
+		<p class="fs-5 text-primary fw-bold mb-1">@RealizarSuma()</p>
+		<button @onclick="GenerarNumerosComponenteSuma"
+				class="btn fw-bold btn-outline-dark d-block m-auto mb-1">
+				Generar</button>
+	</div>
+
+</div>
+
+@code {
+	[Parameter]
+	[EditorRequired]
+	public ParentDetail parentDetail { get; set; } = null!; //Recibir el objeto padre
+	[Parameter]
+	[EditorRequired]
+	public EventCallback GenerarNumerosComponenteSuma { get; set; } //Evento para generar los numeros en el componente padre
+
+	public string RealizarSuma()	
+	{
+		string cadena = parentDetail.sNumberList!;	
+		int suma = 0;
+		parentDetail.NumberList!.ForEach(item => suma += item);		
+		return cadena + " = " + suma.ToString();
+	}
+}

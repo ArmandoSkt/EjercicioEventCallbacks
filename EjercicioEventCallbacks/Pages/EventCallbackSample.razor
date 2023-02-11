@@ -1,0 +1,179 @@
+﻿@page "/eventcallbacksample"
+
+<PageTitle>Ejercicio EventCallbaks</PageTitle>
+
+<section class="row justify-content-center mb-3">
+	<h1 class="text-black text-center mb-1">EventCallback <small class="text-muted">Sample</small></h1>
+	<button @onclick="ObtenerNumerosComponentePadre" 
+			class="btn btn-dark fw-bold fs-6 w-auto py-2 px-4 activate">Generar Numeros</button>
+</section>
+
+@if ( parentDetail.NumberList?.Count  == 0 )
+{
+	<p class="alert fs-3 alert-danger w-50 p-2 mx-md-auto text-center">Lista de numeros vacia</p>
+}
+else
+{
+	<p class="text-primary mb-4 fs-5">Números generados del componente padre: <b> @parentDetail.sNumberList </b></p>
+	<section class="container gap-4 p-2 rounded bg-white mb-5"
+			style="border: 3px solid #aaa;">
+		<section class="row">
+			<div class="col-sm-6 d-flex flex-column">
+				<div class="text-success fs-5 p-2">
+					<p >Números generados del componente sumas</p>
+					<p class="fw-bold">@((MarkupString)sumDetail.sNumberList!)</p>
+					<hr />
+				</div>
+				<div class="text-black fs-5 p-2">
+					<p >Números generados del componente restas</p>
+					<p class="fw-bold">@((MarkupString)subDetail.sNumberList!)</p>
+					<hr />
+				</div>
+				<div class="text-primary fs-5 p-2">
+					<p >Números generados del componente multiplicaciones</p>
+					<p class="fw-bold">@((MarkupString)mulDetail.sNumberList!)</p>
+					<hr />
+				</div>
+				<div class="text-danger fs-5 p-2">
+					<p >Números generados del componente divisiones</p>
+					<p class="fw-bold">@((MarkupString)divDetail.sNumberList!)</p>
+				</div>				
+			</div>
+		
+			<div class="col-sm-6 px-lg-5">
+				<Form_SumComponent parentDetail="parentDetail" GenerarNumerosComponenteSuma="GenerarNumerosComponenteSuma" />
+				<Form_SubComponent parentDetail="parentDetail" GenerarNumerosComponenteResta="GenerarNumerosComponenteResta" />
+				<Form_MulComponent parentDetail="parentDetail" GenerarNumerosComponenteMultiplicacion="GenerarNumerosComponenteMultiplicacion" />
+				<Form_DivComponent parentDetail="parentDetail" GenerarNumerosComponenteDivision="GenerarNumerosComponenteDivision" />
+			</div>
+		</section>		
+	</section>
+}
+@code {
+	//Modelo de la clase que contiene la lista de numeros del componente padre
+	ParentDetail parentDetail { get; set; } = new ParentDetail();
+
+	//Modelos de los componentes hijos
+	public SumDetail sumDetail { get; set; } = new SumDetail();
+	public SubDetail subDetail { get; set; } = new SubDetail();
+	public MulDetail mulDetail { get; set; } = new MulDetail();
+	public DivDetail divDetail { get; set; } = new DivDetail();
+
+	//Variable que guarda las cadena de numeros de los componentes hijos
+	private string cadena { get; set; } = "";	
+
+	//Método que genera 6 numeros aleatorios y los retorna en una lista
+	private List<int> GenerarNumerosAleatorios()
+	{
+		List<int> numberList = new List<int>();
+		for (int i = 0; i < 6; i++)
+		{
+			//Agregar numeros a la lista de la clase padre
+			numberList.Add(new Random().Next(100, 1000));
+		}
+		return numberList;
+		//return new List<int> { 984, 655, 386, 946, 369, 291 };
+	}
+
+	//Método que se ejecuta cuando se presiona el boton de generar numeros
+	public void ObtenerNumerosComponentePadre()
+	{
+		parentDetail.NumberList?.Clear();
+		parentDetail.NumberList = GenerarNumerosAleatorios();
+		parentDetail.sNumberList = "[" + string.Join(" ", parentDetail.NumberList!) + "]";
+	}
+
+	//Método que se ejecuta cuando se presiona el boton de genera del componente hijo Form_SumComponent
+	private void GenerarNumerosComponenteSuma() 
+	{
+		sumDetail.NumberList?.Clear();
+		sumDetail.NumberList = GenerarNumerosAleatorios();
+		//Dividir la lista, hacer la suma y guardar en cadena
+		int resultado = 0;
+		List<int> numeros = sumDetail.NumberList.Take(3).ToList();
+		numeros.ForEach(n => resultado += n);
+		cadena = "[" + string.Join(" ", numeros) + " = " + resultado + "]" + "<br>";
+		numeros.Clear();
+		resultado = 0;
+		numeros = sumDetail.NumberList.Skip(3).Take(3).ToList();
+		numeros.ForEach(n => resultado += n);
+		cadena += "[" + string.Join(" ", numeros) + " = " + resultado + "]";
+		sumDetail.sNumberList = cadena;
+	}
+
+	//Método que se ejecuta cuando se presiona el boton de generar del componente hijo Form_SubComponent
+	private void GenerarNumerosComponenteResta() 
+	{
+		subDetail.NumberList?.Clear();
+		subDetail.NumberList = GenerarNumerosAleatorios();
+		//Dividir la lista, hacer la resta y guardar en cadena
+		List<int> numeros = subDetail.NumberList.Take(3).ToList();
+		List<int> numeros2 = subDetail.NumberList.Skip(3).Take(3).ToList();
+		cadena = $"[{string.Join(" ", numeros)} = {ResultadoOperacionResta(numeros)}]" + "<br>"
+				+ $"[{string.Join(" ", numeros2)} = {ResultadoOperacionResta(numeros2)}]";
+		subDetail.sNumberList = cadena;
+	}
+	//Método auxiliar para realizar la operación de resta de los numeros de la lista dividida y retornar el resultado 
+	private string ResultadoOperacionResta(List<int> numeros)
+	{
+		int resta = numeros[0];
+		//Restará o sumará el siguiente número de acuerdo a si es par o impar respectivamente.
+		for (int i = 1; i < numeros.Count; i++)
+		{
+			if (numeros[i] % 2 == 0)
+			{
+				resta -= numeros[i];
+				continue;
+			}
+			resta += numeros[i];
+		}
+		return resta.ToString();
+	}
+
+	//Método que se ejecuta cuando se presiona el boton de generar del componente hijo Form_MulComponent
+	private void GenerarNumerosComponenteMultiplicacion()
+	{
+		mulDetail.NumberList?.Clear();
+		mulDetail.NumberList = GenerarNumerosAleatorios();
+		//Dividir la lista, hacer la multiplicacion de los numeros y guardar en cadena
+		int resultado = 1;
+		List<int> numeros = mulDetail.NumberList.Take(3).ToList();
+		numeros.ForEach(n => resultado *= n);
+		cadena = "[" + string.Join(" ", numeros) + " = " + resultado + "]" + "<br>";
+		numeros.Clear();
+		resultado = 1;
+		numeros = mulDetail.NumberList.Skip(3).Take(3).ToList();
+		numeros.ForEach(n => resultado *= n);
+		cadena += "[" + string.Join(" ", numeros) + " = " + resultado + "]";
+		mulDetail.sNumberList = cadena;
+	}
+
+	//Método que se ejecuta cuando se presiona el boton de generar del componente hijo Form_DivComponent
+	private void GenerarNumerosComponenteDivision()
+	{
+		divDetail.NumberList?.Clear();
+		divDetail.NumberList = GenerarNumerosAleatorios();
+		//Dividir la lista, hacer la resta y guardar en cadena
+		List<int> numeros = divDetail.NumberList.Take(3).ToList();
+		List<int> numeros2 = divDetail.NumberList.Skip(3).Take(3).ToList();
+		cadena = $"[{string.Join(" ", numeros)} = {ResultadoOperacionDivision(numeros)}]" + "<br>"
+				+ $"[{string.Join(" ", numeros2)} = {ResultadoOperacionDivision(numeros2)}]";
+		divDetail.sNumberList = cadena;
+	}
+	//Método auxiliar para realizar la operación de division de los numeros de la lista dividida y retornar el resultado 
+	private string ResultadoOperacionDivision(List<int> numeros)
+	{
+		double division = numeros[0];
+		//Dividirá o multiplicará el siguiente número de acuerdo a si es par o impar respectivamente
+		for (int i = 1; i < numeros.Count; i++)
+		{
+			if (numeros[i] % 2 == 0)
+			{
+				division /= numeros[i];
+				continue;
+			}
+			division *= numeros[i];
+		}
+		return division.ToString();
+	}	
+}
